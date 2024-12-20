@@ -11,7 +11,6 @@ from reactpy.testing import BackendFixture
 from .tooling import page_stable
 
 
-@pytest.mark.anyio
 async def test_stress(server: BackendFixture, browser: Browser):
     _browser_log: dict[str, list[str]] = {}
 
@@ -67,9 +66,11 @@ async def test_stress(server: BackendFixture, browser: Browser):
     server.mount(TestApp)
 
     await asyncio.wait(
-        [asyncio.create_task(worker(browser, i)) for i in range(4)],
+        [asyncio.create_task(worker(browser, i)) for i in range(6)],
         return_when=asyncio.ALL_COMPLETED,
     )
 
+    for blog in _browser_log:
+        assert blog == ["worker started", "render", "on_click", "render"]
 
     assert True

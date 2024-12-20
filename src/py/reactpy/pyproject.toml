@@ -131,6 +131,13 @@ log_cli = 1
 filterwarnings = "ignore::DeprecationWarning"
 addopts = "-rsxX -vv"
 
+# STJ
+
+# log_format = "%(levelname)s %(asctime)s.%(msecs)03d %(module)12s/%(lineno)-5d %(message)s"
+log_format = "%(levelname)-5s %(module)16s/%(lineno)-5d %(message)s"
+log_date_format ="%H:%M:%S"
+
+
 
 # --- MyPy -----------------------------------------------------------------------------
 
@@ -161,3 +168,4 @@ exclude_lines = [
   "if TYPE_CHECKING:",
 ]
 omit = ["reactpy/__main__.py"]
+
