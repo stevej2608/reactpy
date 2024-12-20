@@ -60,10 +60,6 @@ def configure(
         component: A component constructor
         options: Options for configuring server behavior
     """
-
-    logger.info('configure')
-
-
     options = options or Options()
 
     # this route should take priority so set up it up first

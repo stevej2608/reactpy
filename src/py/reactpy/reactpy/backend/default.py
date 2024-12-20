@@ -49,7 +49,6 @@ async def serve_development_app(
     started: asyncio.Event | None = None,
 ) -> None:
     """Run an application using a development server"""
-    logger.debug('serve_development_app')
     return await _default_implementation().serve_development_app(
         app, host, port, started
     )

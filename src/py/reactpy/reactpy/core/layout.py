@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import json
 import abc
 from asyncio import (
     FIRST_COMPLETED,
@@ -48,20 +48,34 @@ from reactpy.core.types import (
 from reactpy.core.vdom import validate_vdom_json
 from reactpy.utils import Ref
 
-logger = getLogger(__name__)
+logger = getLogger("utils")
+
+def ID() -> int:
+    """An immutable counter. Returns  0, 1, 2 ... on each successive call
+
+    Returns:
+        int: count 0, 1, 2 ...
+    """
+
+    if not hasattr(ID, "counter"):
+        setattr(ID, "counter", 0)
+
+    ID.counter += 1  # type: ignore
+    return ID.counter  # type: ignore
 
 
 class Layout:
     """Responsible for "rendering" components. That is, turning them into VDOM."""
 
     __slots__: tuple[str, ...] = (
-        "root",
         "_event_handlers",
-        "_rendering_queue",
+        "_model_states_by_life_cycle_state_id",
         "_render_tasks",
         "_render_tasks_ready",
+        "_rendering_queue",
         "_root_life_cycle_state_id",
-        "_model_states_by_life_cycle_state_id",
+        "count",
+        "root",
     )
 
     if not hasattr(abc.ABC, "__weakref__"):  # nocov
@@ -74,10 +88,12 @@ class Layout:
             msg = f"Expected a ComponentType, not {type(root)!r}."
             raise TypeError(msg)
         self.root = root
+        self.count = ID()
 
     async def __aenter__(self) -> Layout:
         # create attributes here to avoid access before entering context manager
         logger.info('Layout.__aenter__ %s', self.root.type.__name__)
+        logger.info("%03d __enter__", self.count)
 
         self._event_handlers: EventHandlerDict = {}
         self._render_tasks: set[Task[LayoutUpdateMessage]] = set()
@@ -121,6 +137,9 @@ class Layout:
         # we just ignore the event.
         handler = self._event_handlers.get(event["target"])
 
+        logger.info("%03d deliver %s.%s", self.count, event['data'][0]['currentTarget']['tagName'], event['data'][0]['type'])
+
+
         if handler is not None:
             try:
                 logger.info('*********** deliver **********\n')
@@ -155,7 +174,9 @@ class Layout:
                     f"{model_state_id!r} - component already unmounted"
                 )
             else:
-                return await self._create_layout_update(model_state)
+                result = await self._create_layout_update(model_state)
+                logger.info("%03d layout complete %d", self.count, len(json.dumps(result)))
+                return result
 
     async def _parallel_render(self) -> LayoutUpdateMessage:
         """Await to fetch the first completed render within our asyncio task group.
@@ -195,6 +216,8 @@ class Layout:
         life_cycle_state = new_state.life_cycle_state
         life_cycle_hook = life_cycle_state.hook
 
+        logger.info("%03d _render_component %s", self.count, component.type.__name__)
+
         self._model_states_by_life_cycle_state_id[life_cycle_state.id] = new_state
 
         await life_cycle_hook.affect_component_will_render(component)
@@ -207,7 +230,8 @@ class Layout:
             wrapper_model: VdomDict = {"tagName": "", "children": [raw_model]}
             await self._render_model(exit_stack, old_state, new_state, wrapper_model)
         except Exception as error:
-            logger.exception(f"Failed to render {component}")
+            # logger.exception(f"Failed to render {component}")
+            logger.error(f"Failed to render {component}")
             new_state.model.current = {
                 "tagName": "",
                 "error": (

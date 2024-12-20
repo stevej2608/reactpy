@@ -1,6 +1,6 @@
 # Building reactpy
 
-To create a harch shell and run tests, see [contributor-guide]
+To create a hatch shell and run tests, see [contributor-guide]
 
     hatch shell
     invoke env      !! This takes a while
@@ -16,9 +16,9 @@ To create a harch shell and run tests, see [contributor-guide]
 ## Running examples
 
     hatch shell
-    cd src/py
+    cd src/py/reactpy
 
-    python -m stj.simple_button
+    python -m reactpy.stj.sample_button
 
 ## VSCODE debugging
 

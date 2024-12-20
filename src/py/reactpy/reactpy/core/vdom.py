@@ -212,7 +212,7 @@ def vdom(
 
     return model
 
-# STJ - the html and svg modules in invokes this for each of the
+# STJ - the html and svg modules invokes this for each of the
 # basic html/svg tags. When the user application calls:
 #
 #          html.p('Hello World')

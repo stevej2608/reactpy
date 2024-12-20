@@ -1,4 +1,4 @@
-from reactpy.sample_button import ButtonWithChangingColor
+from reactpy.stj.sample_button import ButtonWithChangingColor
 from reactpy.testing import DisplayFixture, poll
 
 # src/py/reactpy/tests/test_client.py

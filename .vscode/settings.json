@@ -1,11 +1,21 @@
 {
     "cSpell.words": [
+        "Morshead",
         "pytest",
         "runserver"
     ],
-    "python.analysis.typeCheckingMode": "basic",
-    "python.analysis.autoImportCompletions": true,
-    "pylint.args": [
-        "\"pylint.args\": [\"--rcfile=.pylintrc]"
-    ]
+
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.exclude": [
+        "tmp",
+        "docs",
+        "**/.venv",
+        "**/js",
+        ".mypy_cache"
+    ],
+    "mypy-type-checker.path": [
+        "src",
+    ],
+
 }

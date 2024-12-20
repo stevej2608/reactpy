@@ -137,6 +137,8 @@ class LifeCycleHook:
         self._effect_stops: list[Event] = []
         self._render_access = Semaphore(1)  # ensure only one render at a time
 
+        logger.info("LifeCycleHook - constructor()")
+
     def schedule_render(self) -> None:
         if self._scheduled_render:
             return None
@@ -202,6 +204,9 @@ class LifeCycleHook:
 
     async def affect_component_did_render(self) -> None:
         """The component completed a render"""
+
+        logger.info("component_did_render %s", self.component.type.__name__)
+        
         self.unset_current()
         self._rendered_atleast_once = True
         self._current_state_index = 0
