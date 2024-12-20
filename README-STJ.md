@@ -20,6 +20,12 @@ To create a hatch shell and run tests, see [contributor-guide]
 
     python -m reactpy.stj.sample_button
 
+## Testing
+
+    hatch run test-py
+
+    pytest src/py/reactpy/tests/test_stj/test_loading.py
+
 ## VSCODE debugging
 
 In order launch the examples in the VSCODE debugger the python interpreter

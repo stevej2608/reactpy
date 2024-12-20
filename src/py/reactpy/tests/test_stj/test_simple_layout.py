@@ -1,5 +1,4 @@
-from reactpy import component, Layout, Ref, vdom, use_state
-
+from reactpy import Layout, Ref, component, use_state, vdom
 from tests.tooling.common import update_message
 
 # src/py/reactpy/tests/test_core/test_layout.py#L81
