@@ -69,6 +69,7 @@ class Layout:
 
     def __init__(self, root: ComponentType) -> None:
         super().__init__()
+        logger.info('Layout.constructor(root=%s)', root.type.__name__)
         if not isinstance(root, ComponentType):
             msg = f"Expected a ComponentType, not {type(root)!r}."
             raise TypeError(msg)
@@ -76,6 +77,8 @@ class Layout:
 
     async def __aenter__(self) -> Layout:
         # create attributes here to avoid access before entering context manager
+        logger.info('Layout.__aenter__ %s', self.root.type.__name__)
+
         self._event_handlers: EventHandlerDict = {}
         self._render_tasks: set[Task[LayoutUpdateMessage]] = set()
         self._render_tasks_ready: Semaphore = Semaphore(0)
@@ -86,10 +89,12 @@ class Layout:
         self._root_life_cycle_state_id = root_id = root_model_state.life_cycle_state.id
         self._model_states_by_life_cycle_state_id = {root_id: root_model_state}
         self._schedule_render_task(root_id)
-
         return self
 
     async def __aexit__(self, *exc: object) -> None:
+    
+        logger.info('Layout.__aexit__ %s', self.root.type.__name__)
+
         root_csid = self._root_life_cycle_state_id
         root_model_state = self._model_states_by_life_cycle_state_id[root_csid]
 
@@ -118,6 +123,8 @@ class Layout:
 
         if handler is not None:
             try:
+                logger.info('*********** deliver **********\n')
+                logger.info('deliver %s', event["data"])
                 await handler.function(event["data"])
             except Exception:
                 logger.exception(f"Failed to execute event handler {handler}")
@@ -128,6 +135,9 @@ class Layout:
             )
 
     async def render(self) -> LayoutUpdateMessage:
+
+        logger.info('Layout.render %s', self.root.type.__name__)
+
         if REACTPY_ASYNC_RENDERING.current:
             return await self._parallel_render()
         else:  # nocov

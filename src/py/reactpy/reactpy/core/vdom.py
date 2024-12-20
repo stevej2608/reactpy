@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from collections.abc import Mapping, Sequence
 from functools import wraps
 from typing import Any, Protocol, cast, overload
@@ -24,6 +25,8 @@ from reactpy.core.types import (
     VdomDictConstructor,
     VdomJson,
 )
+
+logger = logging.getLogger(__name__)
 
 VDOM_JSON_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema",
@@ -209,6 +212,12 @@ def vdom(
 
     return model
 
+# STJ - the html and svg modules in invokes this for each of the
+# basic html/svg tags. When the user application calls:
+#
+#          html.p('Hello World')
+#
+# it's really a call to the inner function constructor('Hello World') defined below.
 
 def make_vdom_constructor(
     tag: str, allow_children: bool = True, import_source: ImportSourceDict | None = None
@@ -220,6 +229,7 @@ def make_vdom_constructor(
     """
 
     def constructor(*attributes_and_children: Any, **kwargs: Any) -> VdomDict:
+        logger.info('create vdom %s', tag)
         model = vdom(tag, *attributes_and_children, **kwargs)
         if not allow_children and "children" in model:
             msg = f"{tag!r} nodes cannot have children."

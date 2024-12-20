@@ -101,6 +101,9 @@ async def test_simple_layout():
 
 
 async def test_nested_component_layout():
+
+    # STJ: Confirm nested layout
+
     parent_set_state = reactpy.Ref(None)
     child_set_state = reactpy.Ref(None)
 
@@ -132,11 +135,18 @@ async def test_nested_component_layout():
         }
 
     async with reactpy.Layout(Parent()) as layout:
+
+        # STJ: Confirm initial rendering includes both the
+        # parent and the child
+
         update_1 = await layout.render()
         assert update_1 == update_message(
             path="",
             model=make_parent_model(0, make_child_model(0)),
         )
+
+        # STJ: Change the parent state and confrim both the parent
+        # and the child are rendered
 
         parent_set_state.current(1)
 
@@ -145,6 +155,9 @@ async def test_nested_component_layout():
             path="",
             model=make_parent_model(1, make_child_model(0)),
         )
+
+        # STJ: Change the child state and confirm only the
+        # child is rendered
 
         child_set_state.current(1)
 
@@ -160,6 +173,9 @@ async def test_nested_component_layout():
     reason="errors only reported in debug mode",
 )
 async def test_layout_render_error_has_partial_update_with_error_message():
+
+    # STJ: Confirm a bad component can be handled gracefully
+
     @reactpy.component
     def Main():
         return reactpy.html.div(OkChild(), BadChild(), OkChild())
@@ -211,6 +227,9 @@ async def test_layout_render_error_has_partial_update_with_error_message():
     reason="errors only reported in debug mode",
 )
 async def test_layout_render_error_has_partial_update_without_error_message():
+
+    # STJ: Confirm a bad component can be handled gracefully
+
     @reactpy.component
     def Main():
         return reactpy.html.div([OkChild(), BadChild(), OkChild()])
@@ -255,6 +274,9 @@ async def test_layout_render_error_has_partial_update_without_error_message():
 
 
 async def test_render_raw_vdom_dict_with_single_component_object_as_children():
+
+    # Confirm tags & children can be hand-crafted
+
     @reactpy.component
     def Main():
         return {"tagName": "div", "children": Child()}
@@ -290,10 +312,19 @@ async def test_render_raw_vdom_dict_with_single_component_object_as_children():
 
 async def test_components_are_garbage_collected():
     live_components = set()
+
+    # STJ: Render same layout twice. The second rendering will create orphans from the
+    # first rendereing. Confirm orphanrd components are garbage collected
+
     outer_component_hook = HookCatcher()
 
     def add_to_live_components(constructor):
+
         def wrapper(*args, **kwargs):
+
+            # Observe garbage collector and remove component id from 
+            # live_components on component removal.
+
             component = constructor(*args, **kwargs)
             component_id = id(component)
             live_components.add(component_id)
@@ -338,6 +369,9 @@ async def test_components_are_garbage_collected():
 
 
 async def test_root_component_life_cycle_hook_is_garbage_collected():
+
+    # STJ: Confirm lifecycle hooks are garbage collected
+
     live_hooks = set()
 
     def add_to_live_hooks(constructor):
@@ -369,6 +403,10 @@ async def test_root_component_life_cycle_hook_is_garbage_collected():
 
 
 async def test_life_cycle_hooks_are_garbage_collected():
+
+    # STJ: Confim hook associated with orphaned inner component is
+    # garbge collected when the component updates.
+
     live_hooks = set()
     set_inner_component = None
 
@@ -425,6 +463,10 @@ async def test_life_cycle_hooks_are_garbage_collected():
 
 
 async def test_double_updated_component_is_not_double_rendered():
+
+    # STJ: Confirm repeated calls to schedule_render() result in
+    # only one rendering
+
     hook = HookCatcher()
     run_count = reactpy.Ref(0)
 
@@ -439,6 +481,10 @@ async def test_double_updated_component_is_not_double_rendered():
 
         assert run_count.current == 1
 
+        # STJ: THe frst call to schedule_render() results in the the
+        # LifeCycleHook actioning the scheduler. The second call
+        # is dimissed
+
         hook.latest.schedule_render()
         hook.latest.schedule_render()
 
@@ -451,10 +497,16 @@ async def test_double_updated_component_is_not_double_rendered():
         except asyncio.TimeoutError:
             pass  # the render should still be rendering since we only update once
 
+        # STJ: Confirm only one additional rendering has occured.
+
         assert run_count.current == 2
 
 
 async def test_update_path_to_component_that_is_not_direct_child_is_correct():
+
+    # STJ: The test calls schedule_render() on a granchild. Confirm
+    # the resulting layout update path is maps to the granchild.
+
     hook = HookCatcher()
 
     @reactpy.component
@@ -476,6 +528,10 @@ async def test_update_path_to_component_that_is_not_direct_child_is_correct():
 
 
 async def test_log_on_dispatch_to_missing_event_handler(caplog):
+
+    # STJ: Confirm error report is generated when an attempt is made to
+    # deliver an event with a missing handler
+
     @reactpy.component
     def SomeComponent():
         return reactpy.html.div()
@@ -490,6 +546,10 @@ async def test_log_on_dispatch_to_missing_event_handler(caplog):
 
 
 async def test_model_key_preserves_callback_identity_for_common_elements(caplog):
+
+    # STJ: Reverse the rendering order of two buttons and confirm the
+    # button event refs are maintained.
+
     called_good_trigger = reactpy.Ref(False)
     good_handler = StaticEventHandler()
     bad_handler = StaticEventHandler()
@@ -538,6 +598,9 @@ async def test_model_key_preserves_callback_identity_for_common_elements(caplog)
 
 
 async def test_model_key_preserves_callback_identity_for_components():
+
+    # STJ: not sure what this does
+
     called_good_trigger = reactpy.Ref(False)
     good_handler = StaticEventHandler()
     bad_handler = StaticEventHandler()
@@ -588,6 +651,10 @@ async def test_model_key_preserves_callback_identity_for_components():
 
 
 async def test_component_can_return_another_component_directly():
+
+    # STJ: Edge case test
+
+
     @reactpy.component
     def Outer():
         return Inner()
@@ -612,6 +679,10 @@ async def test_component_can_return_another_component_directly():
 
 
 async def test_hooks_for_keyed_components_get_garbage_collected():
+
+    # STJ: gradually reduce the number of keyed child components, Confirm
+    # that the orphaned chilren are removed by the garbage collector
+
     pop_item = reactpy.Ref(None)
     garbage_collect_items = []
     registered_finalizers = set()
@@ -619,7 +690,11 @@ async def test_hooks_for_keyed_components_get_garbage_collected():
     @reactpy.component
     def Outer():
         items, set_items = reactpy.hooks.use_state([1, 2, 3])
+
+        # STJ: the test calls this lambda prior to each rendering cycle
+
         pop_item.current = lambda: set_items(items[:-1])
+
         return reactpy.html.div([Inner(key=k, finalizer_id=k) for k in items])
 
     @reactpy.component
@@ -633,13 +708,19 @@ async def test_hooks_for_keyed_components_get_garbage_collected():
     async with reactpy.Layout(Outer()) as layout:
         await layout.render()
 
+        # STJ: pop a child and rereder
+
         pop_item.current()
         await layout.render()
         assert garbage_collect_items == [3]
 
+        # STJ: pop a child and rereder
+
         pop_item.current()
         await layout.render()
         assert garbage_collect_items == [3, 2]
+
+        # STJ: pop a child and rereder
 
         pop_item.current()
         await layout.render()

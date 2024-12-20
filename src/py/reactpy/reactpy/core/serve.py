@@ -40,9 +40,11 @@ async def serve_layout(
     recv: RecvCoroutine,
 ) -> None:
     """Run a dispatch loop for a single view instance"""
+    logger.info('serve_layouts')
     async with layout:
         try:
             async with create_task_group() as task_group:
+                logger.info(f"Start serving {layout}")
                 task_group.start_soon(_single_outgoing_loop, layout, send)
                 task_group.start_soon(_single_incoming_loop, task_group, layout, recv)
         except Stop:  # nocov

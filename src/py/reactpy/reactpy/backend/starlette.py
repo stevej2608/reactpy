@@ -60,6 +60,10 @@ def configure(
         component: A component constructor
         options: Options for configuring server behavior
     """
+
+    logger.info('configure')
+
+
     options = options or Options()
 
     # this route should take priority so set up it up first
@@ -99,6 +103,9 @@ def use_connection() -> Connection[WebSocket]:
 
 
 def _setup_common_routes(options: Options, app: Starlette) -> None:
+
+    logger.info('_setup_common_routes()')
+
     cors_options = options.cors
     if cors_options:  # nocov
         cors_params = (
@@ -138,13 +145,23 @@ def _make_index_route(options: Options) -> Callable[[Request], Awaitable[HTMLRes
 def _setup_single_view_dispatcher_route(
     options: Options, app: Starlette, component: RootComponentConstructor
 ) -> None:
+
+    logger.info('websocket_route %s', str(STREAM_PATH))
+    logger.info('websocket_route %s', f"{STREAM_PATH}/{{path:path}}")
+    
     async def model_stream(socket: WebSocket) -> None:
+
+        logger.info('await socket.accept()')
+
         await socket.accept()
+
         send, recv = _make_send_recv_callbacks(socket)
 
         pathname = "/" + socket.scope["path_params"].get("path", "")
         pathname = pathname[len(options.url_prefix) :] or "/"
         search = socket.scope["query_string"].decode()
+
+        logger.info('Rx pathname="%s", search="%s"', pathname, search)
 
         try:
             await serve_layout(
@@ -180,6 +197,7 @@ def _make_send_recv_callbacks(
         await socket.send_text(json.dumps(value))
 
     async def sock_recv() -> Any:
-        return json.loads(await socket.receive_text())
+        txt = await socket.receive_text()
+        return json.loads(txt)
 
     return sock_send, sock_recv

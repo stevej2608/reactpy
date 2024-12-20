@@ -20,8 +20,10 @@ dictConfig(
         },
         "formatters": {
             "generic": {
-                "format": "%(asctime)s | %(log_color)s%(levelname)s%(reset)s | %(message)s",
-                "datefmt": r"%Y-%m-%dT%H:%M:%S%z",
+                # "format": "%(asctime)s | %(log_color)s%(levelname)s%(reset)s | %(message)s",
+                "format": "%(levelname)s %(asctime)s %(pathname)65s#L/%(lineno)-5d %(message)s",
+                "datefmt": "%H:%M:%S",
+                # "datefmt": r"%Y-%m-%dT%H:%M:%S%z",
                 "class": "colorlog.ColoredFormatter",
             }
         },

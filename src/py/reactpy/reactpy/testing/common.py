@@ -97,7 +97,7 @@ class poll(Generic[_R]):  # noqa: N801
             f"value to equal {right!r}",
         )
 
-
+# STJ: Used during testing
 class HookCatcher:
     """Utility for capturing a LifeCycleHook from a component
 
@@ -151,7 +151,7 @@ class HookCatcher:
 
         return wrapper
 
-
+# STJ - Used during testing
 class StaticEventHandler:
     """Utility for capturing the target of one event handler
 

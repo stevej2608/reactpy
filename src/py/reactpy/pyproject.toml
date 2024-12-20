@@ -127,6 +127,11 @@ python_files = "*asserts.py test_*.py"
 asyncio_mode = "auto"
 log_cli_level = "INFO"
 
+log_cli = 1
+filterwarnings = "ignore::DeprecationWarning"
+addopts = "-rsxX -vv"
+
+
 # --- MyPy -----------------------------------------------------------------------------
 
 [tool.mypy]

@@ -25,6 +25,7 @@ def current_hook() -> LifeCycleHook:
     """Get the current :class:`LifeCycleHook`"""
     hook_stack = _HOOK_STATE.get()
     if not hook_stack:
+        # TODO: STJ, Can this ever happen?
         msg = "No life cycle hook is active. Are you rendering in a layout?"
         raise RuntimeError(msg)
     return hook_stack[-1]

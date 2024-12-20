@@ -9,7 +9,6 @@ from reactpy.core.types import RootComponentConstructor
 
 _App = TypeVar("_App")
 
-
 @runtime_checkable
 class BackendType(Protocol[_App]):
     """Common interface for built-in web server/framework integrations"""

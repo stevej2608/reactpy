@@ -22,7 +22,7 @@ SUPPORTED_BACKENDS = (
     "starlette",
 )
 
-
+# STJ Start server
 def run(
     component: RootComponentConstructor,
     host: str = "127.0.0.1",

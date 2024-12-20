@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import inspect
+import logging
 from functools import wraps
 from typing import Any, Callable
 
 from reactpy.core.types import ComponentType, VdomDict
 
+logger = logging.getLogger(__name__)
 
+
+# STJ: @component wrapper
 def component(
     function: Callable[..., ComponentType | VdomDict | str | None]
 ) -> Callable[..., Component]:
@@ -31,6 +35,7 @@ def component(
     return constructor
 
 
+# Intance returned by @component
 class Component:
     """An object for rending component models."""
 
@@ -49,8 +54,10 @@ class Component:
         self._args = args
         self._kwargs = kwargs
         self._sig = sig
+        logger.info('Component.constructor(%s)', self.type.__name__)
 
     def render(self) -> ComponentType | VdomDict | str | None:
+        logger.info('Component.render(%s)', self.type.__name__)
         return self.type(*self._args, **self._kwargs)
 
     def __repr__(self) -> str:
