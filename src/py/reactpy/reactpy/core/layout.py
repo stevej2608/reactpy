@@ -231,7 +231,7 @@ class Layout:
             await self._render_model(exit_stack, old_state, new_state, wrapper_model)
         except Exception as error:
             # logger.exception(f"Failed to render {component}")
-            logger.error(f"Failed to render {component}")
+            logger.error(f"<<<<<<<<<<<<< Failed to render {component} >>>>>>>>>>>>>>>")
             new_state.model.current = {
                 "tagName": "",
                 "error": (
