@@ -1,14 +1,16 @@
 import asyncio
 from typing import Any
 
-import pytest
 from playwright.async_api import Browser
 from utils.logger import log
 
 from reactpy import component, event, html, use_location, use_state
 from reactpy.testing import BackendFixture
 
-from .tooling import page_stable
+from reactpy.core.id import task_name
+
+
+from .tooling import page_stable, task_monitor
 
 
 async def test_stress(server: BackendFixture, browser: Browser):
@@ -27,10 +29,10 @@ async def test_stress(server: BackendFixture, browser: Browser):
         @event
         def on_click(event: Any):
             browser_log(_id, "on_click")
-            log.info("%s on_click()", _id)
+            log.info("%s %s on_click()", task_name(), _id)
             set_count(count+1)
 
-        log.info("%s render()", _id)
+        log.info("%s %s render()", task_name(), _id)
         browser_log(_id, "render")
         return html.div(
             html.button({"on_click": on_click}, "UP"),
@@ -63,14 +65,20 @@ async def test_stress(server: BackendFixture, browser: Browser):
 
     log.info("test_stress")
 
+    # task_switch_monitor = task_monitor()
+
+
+    # event_loop = asyncio.get_event_loop()
+    # event_loop.set_debug(True)
+
     server.mount(TestApp)
 
     await asyncio.wait(
-        [asyncio.create_task(worker(browser, i)) for i in range(6)],
+        [asyncio.create_task(worker(browser, i)) for i in range(1)],
         return_when=asyncio.ALL_COMPLETED,
     )
 
-    for blog in _browser_log:
+    for blog in _browser_log.values():
         assert blog == ["worker started", "render", "on_click", "render"]
 
     assert True

@@ -26,6 +26,8 @@ from reactpy.core.types import (
     VdomJson,
 )
 
+from reactpy.core.id import task_name
+
 logger = logging.getLogger(__name__)
 
 VDOM_JSON_SCHEMA = {
@@ -229,7 +231,7 @@ def make_vdom_constructor(
     """
 
     def constructor(*attributes_and_children: Any, **kwargs: Any) -> VdomDict:
-        logger.info('create vdom %s', tag)
+        logger.info('%s create vdom %s', task_name(), tag)
         model = vdom(tag, *attributes_and_children, **kwargs)
         if not allow_children and "children" in model:
             msg = f"{tag!r} nodes cannot have children."

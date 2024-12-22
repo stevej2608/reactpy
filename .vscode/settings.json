@@ -5,6 +5,9 @@
         "runserver"
     ],
 
+    "python.defaultInterpreterPath": "${workspaceRoot}/.venv/scripts/bin/python",
+    // "python.defaultInterpreterPath": "${workspaceRoot}/src/py/reactpy/.venv/reactpy/bin/python",
+
     "python.analysis.diagnosticMode": "workspace",
     "python.analysis.typeCheckingMode": "off",
     "python.analysis.exclude": [

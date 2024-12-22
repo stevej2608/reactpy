@@ -35,13 +35,13 @@ In VSCODE, in the a terminal window:
 
     hatch shell
     whereis python
-    python: /usr/local/bin/python /home/vscode/.local/share/hatch/env/virtual/scripts/8SrUMTRg/scripts/bin/python
+    python: .venv/scripts/bin/python
 
 Using the above example, open the command input (Ctrl+Shift+P): Select Python Interpreter, and add:
 
-    /home/vscode/.local/share/hatch/env/virtual/scripts/8SrUMTRg
+    .venv/scripts/bin/python
 
-In VSCODE, launch *1a. (stj.simple_button)*. THe example should start with a Chrome Browser
+In VSCODE, launch *1a. (stj.simple_button)*. The example should start with a Chrome Browser
 window opening automatically.
 
 
@@ -97,7 +97,7 @@ And finally, with an **asyncio.run()** loop, off we go:
 
         asyncio.run(implementation.serve_development_app(app, host, port))
 
-Concrete implemenations of *serve_development_app()* are defined in:
+Concrete implementations of *serve_development_app()* are defined in:
 
 * [flask.py]
 * [sanic.py]
@@ -111,7 +111,7 @@ At this point, on the console, we see:
 
     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 
-The server is now dormant, waiting for an incomming connection.
+The server is now dormant, waiting for an incoming connection.
 
 
 ### Normal Running
@@ -155,11 +155,34 @@ The tests are a great way to understand how the the codebase is intended to be
 used. The following tests give significant understanding of how the core 
 code hangs together.
 
-*src/py/reactpy/reactpy/core/layout.py*
+### [test_component.py](src/py/reactpy/tests/test_core/test_component.py)
+
+The user facing view of ReactPy is the declaration of custom components
+that are a syntheses of child components, html markup, parameters, logic
+and events:
+
+```
+    @component
+    def Counter(start:int):
+        count, set_count = use_state(start)
+
+        @event
+        def on_click(event: Any):
+            set_count(count+1)
+
+        return html.div(
+            html.button({"on_click": on_click}, "UP"),
+            html.h2(f"{_id} count={count}")
+        )
+```
+
+
 
 * [test_simple_layout](src/py/reactpy/tests/test_core/test_layout.py#L82)
 * [test_nested_component_layout](src/py/reactpy/tests/test_core/test_layout.py#L114)
 * [test_components_are_garbage_collected](src/py/reactpy/tests/test_core/test_layout.py#L321)
+
+
 
 
 ## TODO

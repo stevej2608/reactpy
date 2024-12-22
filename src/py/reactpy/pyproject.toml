@@ -125,7 +125,7 @@ testpaths = "tests"
 xfail_strict = true
 python_files = "*asserts.py test_*.py"
 asyncio_mode = "auto"
-log_cli_level = "INFO"
+log_cli_level = "DEBUG"
 
 log_cli = 1
 filterwarnings = "ignore::DeprecationWarning"

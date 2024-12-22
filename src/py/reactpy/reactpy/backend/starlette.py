@@ -32,6 +32,8 @@ from reactpy.core.layout import Layout
 from reactpy.core.serve import RecvCoroutine, SendCoroutine, serve_layout
 from reactpy.core.types import RootComponentConstructor
 
+from ..core.id import task_name
+
 logger = logging.getLogger(__name__)
 
 
@@ -142,12 +144,12 @@ def _setup_single_view_dispatcher_route(
     options: Options, app: Starlette, component: RootComponentConstructor
 ) -> None:
 
-    logger.info('websocket_route %s', str(STREAM_PATH))
-    logger.info('websocket_route %s', f"{STREAM_PATH}/{{path:path}}")
+    logger.info("%s websocket_route %s", task_name(), str(STREAM_PATH))
+    logger.info("%s websocket_route %s", task_name(), f"{STREAM_PATH}/{{path:path}}")
     
     async def model_stream(socket: WebSocket) -> None:
 
-        logger.info('await socket.accept()')
+        logger.info("%s await socket.accept()", task_name())
 
         await socket.accept()
 
@@ -157,7 +159,7 @@ def _setup_single_view_dispatcher_route(
         pathname = pathname[len(options.url_prefix) :] or "/"
         search = socket.scope["query_string"].decode()
 
-        logger.info('Rx pathname="%s", search="%s"', pathname, search)
+        logger.info('%s Rx pathname="%s", search="%s"', task_name(), pathname, search)
 
         try:
             await serve_layout(

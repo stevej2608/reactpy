@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import logging
-from asyncio import Event, Task, create_task, gather
+from asyncio import Event, Task, create_task, gather, current_task
 from typing import Any, Callable, Protocol, TypeVar
 
 from anyio import Semaphore
 
 from reactpy.core._thread_local import ThreadLocal
 from reactpy.core.types import ComponentType, Context, ContextProviderType
+
+from .id import ID, task_name
 
 T = TypeVar("T")
 
@@ -28,7 +30,12 @@ def current_hook() -> LifeCycleHook:
         # TODO: STJ, Can this ever happen?
         msg = "No life cycle hook is active. Are you rendering in a layout?"
         raise RuntimeError(msg)
-    return hook_stack[-1]
+
+    hook = hook_stack[-1]
+
+    logger.info("%s current_hook() component=%s", task_name(), hook.component.type.__name__)
+
+    return hook
 
 
 class LifeCycleHook:
@@ -112,6 +119,7 @@ class LifeCycleHook:
         "_effect_funcs",
         "_effect_stops",
         "_effect_tasks",
+        "_id",
         "_render_access",
         "_rendered_atleast_once",
         "_schedule_render_callback",
@@ -137,9 +145,12 @@ class LifeCycleHook:
         self._effect_stops: list[Event] = []
         self._render_access = Semaphore(1)  # ensure only one render at a time
 
-        logger.info("LifeCycleHook - constructor()")
+        self._id = ID()
+
+        logger.info("%s LifeCycleHook.constructor()",  task_name())
 
     def schedule_render(self) -> None:
+        logger.info("%s LifeCycleHook.schedule_render()",  task_name())
         if self._scheduled_render:
             return None
         try:
@@ -200,13 +211,16 @@ class LifeCycleHook:
         await self._render_access.acquire()
         self._scheduled_render = False
         self.component = component
+
+        logger.info("%s component_will_render %s", task_name(), self.component.type.__name__)
+
         self.set_current()
 
     async def affect_component_did_render(self) -> None:
         """The component completed a render"""
 
-        logger.info("component_did_render %s", self.component.type.__name__)
-        
+        logger.info("%s component_did_render %s",  task_name(), self.component.type.__name__)
+
         self.unset_current()
         self._rendered_atleast_once = True
         self._current_state_index = 0

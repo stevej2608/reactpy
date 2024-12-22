@@ -48,21 +48,9 @@ from reactpy.core.types import (
 from reactpy.core.vdom import validate_vdom_json
 from reactpy.utils import Ref
 
+from .id import ID, task_name
+
 logger = getLogger("utils")
-
-def ID() -> int:
-    """An immutable counter. Returns  0, 1, 2 ... on each successive call
-
-    Returns:
-        int: count 0, 1, 2 ...
-    """
-
-    if not hasattr(ID, "counter"):
-        setattr(ID, "counter", 0)
-
-    ID.counter += 1  # type: ignore
-    return ID.counter  # type: ignore
-
 
 class Layout:
     """Responsible for "rendering" components. That is, turning them into VDOM."""
@@ -83,17 +71,17 @@ class Layout:
 
     def __init__(self, root: ComponentType) -> None:
         super().__init__()
-        logger.info('Layout.constructor(root=%s)', root.type.__name__)
         if not isinstance(root, ComponentType):
             msg = f"Expected a ComponentType, not {type(root)!r}."
             raise TypeError(msg)
         self.root = root
         self.count = ID()
 
+        logger.info("%s Layout.constructor(%s)",  task_name(), root.type.__name__)
+
     async def __aenter__(self) -> Layout:
         # create attributes here to avoid access before entering context manager
-        logger.info('Layout.__aenter__ %s', self.root.type.__name__)
-        logger.info("%03d __enter__", self.count)
+        logger.info("%s Layout.__aenter__ %s",  task_name(), self.root.type.__name__)
 
         self._event_handlers: EventHandlerDict = {}
         self._render_tasks: set[Task[LayoutUpdateMessage]] = set()
@@ -108,8 +96,8 @@ class Layout:
         return self
 
     async def __aexit__(self, *exc: object) -> None:
-    
-        logger.info('Layout.__aexit__ %s', self.root.type.__name__)
+
+        logger.info("%s Layout.__aexit__ %s",  task_name(), self.root.type.__name__)
 
         root_csid = self._root_life_cycle_state_id
         root_model_state = self._model_states_by_life_cycle_state_id[root_csid]
@@ -137,13 +125,10 @@ class Layout:
         # we just ignore the event.
         handler = self._event_handlers.get(event["target"])
 
-        logger.info("%03d deliver %s.%s", self.count, event['data'][0]['currentTarget']['tagName'], event['data'][0]['type'])
-
+        logger.info("%s <<<<<<<<<<<<< deliver(%s.%s) >>>>>>>>>>>>",  task_name(), event['data'][0]['currentTarget']['tagName'], event['data'][0]['type'])
 
         if handler is not None:
             try:
-                logger.info('*********** deliver **********\n')
-                logger.info('deliver %s', event["data"])
                 await handler.function(event["data"])
             except Exception:
                 logger.exception(f"Failed to execute event handler {handler}")
@@ -153,9 +138,11 @@ class Layout:
                 "does not exist or its component unmounted"
             )
 
+        logger.info("%s deliver.done", task_name())
+
     async def render(self) -> LayoutUpdateMessage:
 
-        logger.info('Layout.render %s', self.root.type.__name__)
+        logger.info("%s Layout.render %s", task_name(), self.root.type.__name__)
 
         if REACTPY_ASYNC_RENDERING.current:
             return await self._parallel_render()
@@ -175,7 +162,7 @@ class Layout:
                 )
             else:
                 result = await self._create_layout_update(model_state)
-                logger.info("%03d layout complete %d", self.count, len(json.dumps(result)))
+                logger.info("%s layout complete len %d bytes",  task_name(), len(json.dumps(result)))
                 return result
 
     async def _parallel_render(self) -> LayoutUpdateMessage:
@@ -186,7 +173,11 @@ class Layout:
         done, _ = await wait(self._render_tasks, return_when=FIRST_COMPLETED)
         update_task: Task[LayoutUpdateMessage] = done.pop()
         self._render_tasks.remove(update_task)
-        return update_task.result()
+
+        logger.info("%s _parallel_render()",  task_name())
+        result = update_task.result()
+        logger.info("%s layout complete len %d bytes",  task_name(), len(json.dumps(result)))
+        return result
 
     async def _create_layout_update(
         self, old_state: _ModelState
@@ -216,7 +207,7 @@ class Layout:
         life_cycle_state = new_state.life_cycle_state
         life_cycle_hook = life_cycle_state.hook
 
-        logger.info("%03d _render_component %s", self.count, component.type.__name__)
+        logger.info("%s _render_component %s",  task_name(), component.type.__name__)
 
         self._model_states_by_life_cycle_state_id[life_cycle_state.id] = new_state
 
@@ -269,6 +260,9 @@ class Layout:
         new_state: _ModelState,
         raw_model: Any,
     ) -> None:
+
+        logger.info("%s _render_model", task_name())
+
         try:
             new_state.model.current = {"tagName": raw_model["tagName"]}
         except Exception as e:  # nocov
@@ -279,9 +273,13 @@ class Layout:
         if "importSource" in raw_model:
             new_state.model.current["importSource"] = raw_model["importSource"]
         self._render_model_attributes(old_state, new_state, raw_model)
+
         await self._render_model_children(
             exit_stack, old_state, new_state, raw_model.get("children", [])
         )
+
+        logger.info("%s _render_model - done", task_name())
+
 
     def _render_model_attributes(
         self,
@@ -353,6 +351,9 @@ class Layout:
         new_state: _ModelState,
         raw_children: Any,
     ) -> None:
+
+        logger.info("%s _render_model_children", task_name())
+
         if not isinstance(raw_children, (list, tuple)):
             raw_children = [raw_children]
 
@@ -457,6 +458,10 @@ class Layout:
         new_state: _ModelState,
         raw_children: list[Any],
     ) -> None:
+
+        logger.info("%s _render_model_children_without_old_state", task_name())
+
+
         children_info = _get_children_info(raw_children)
 
         new_keys = {k for _, _, k in children_info}
@@ -508,7 +513,7 @@ class Layout:
                 f"{lcs_id!r} - component already unmounted"
             )
         else:
-            self._render_tasks.add(create_task(self._create_layout_update(model_state)))
+            self._render_tasks.add(create_task(self._create_layout_update(model_state), name=f"Task-{self.count}.{ID()}"))
             self._render_tasks_ready.release()
 
     def __repr__(self) -> str:

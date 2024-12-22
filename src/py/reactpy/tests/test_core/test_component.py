@@ -3,6 +3,14 @@ from reactpy.testing import DisplayFixture
 
 
 def test_component_repr():
+    """STJ, Confirm:
+
+        1. The @component decorator wraps a function that
+           that returns a Component class instance.
+
+        2. Calling MyComponent returns a Component class instance
+    """
+
     @reactpy.component
     def MyComponent(a, *b, **c):
         pass
@@ -17,6 +25,11 @@ def test_component_repr():
 
 
 async def test_simple_component():
+    """STJ, Confirm:
+
+        1. The Component render() method returns a simple dict()
+
+    """
     @reactpy.component
     def SimpleDiv():
         return reactpy.html.div()
@@ -25,6 +38,12 @@ async def test_simple_component():
 
 
 async def test_simple_parameterized_component():
+    """STJ, Confirm:
+
+        1. vdom() returns a dict
+
+    """
+
     @reactpy.component
     def SimpleParamComponent(tag):
         return reactpy.vdom(tag)
@@ -33,6 +52,16 @@ async def test_simple_parameterized_component():
 
 
 async def test_component_with_var_args():
+    """STJ, Confirm:
+
+        1. The render method returns a dict
+
+        2. The args are returned as a list in the "child" field
+
+        3. The kwargs are returned as a dict in the "attributes" field
+
+    """
+
     @reactpy.component
     def ComponentWithVarArgsAndKwargs(*args, **kwargs):
         return reactpy.html.div(kwargs, args)
@@ -45,6 +74,12 @@ async def test_component_with_var_args():
 
 
 async def test_display_simple_hello_world(display: DisplayFixture):
+    """STJ, Confirm:
+
+        1. A simple component is rendered correctly by the browser
+
+    """
+
     @reactpy.component
     def Hello():
         return reactpy.html.p({"id": "hello"}, ["Hello World"])
@@ -55,6 +90,11 @@ async def test_display_simple_hello_world(display: DisplayFixture):
 
 
 async def test_pre_tags_are_rendered_correctly(display: DisplayFixture):
+    """STJ, Confirm:
+
+        1. A static HTML composition is rendered correctly
+
+    """
     @reactpy.component
     def PreFormatted():
         return reactpy.html.pre(
