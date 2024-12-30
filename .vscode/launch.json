@@ -134,8 +134,30 @@
             "justMyCode": false
           },
 
+
           {
-            "name": "2f. PyTest (Current File)",
+            "name": "2f. PyTest (test_layout.py)",
+            "type": "debugpy",
+            "request": "launch",
+            "stopOnEntry": false,
+            "module": "pytest",
+            "args": [
+              "./tests/test_core/test_layout.py"
+            ],
+            "cwd": "${workspaceRoot}/src/py/reactpy",
+            "env": {
+              // "PYTHONASYNCIODEBUG": "1"
+            },
+            "envFile": "${workspaceRoot}/.env",
+            // "console": "internalConsole",
+            "console": "integratedTerminal",
+            // "internalConsoleOptions": "openOnSessionStart",
+            "justMyCode": false
+          },
+
+
+          {
+            "name": "2g. PyTest (Current File)",
             "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
@@ -143,7 +165,7 @@
             "args": [
               "${file}"
             ],
-            "cwd": "${workspaceRoot}/src/py/reactpy",
+            // "cwd": "${workspaceRoot}/src/py",
             "env": {
               // "PYTHONASYNCIODEBUG": "1"
             },

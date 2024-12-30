@@ -134,7 +134,7 @@ addopts = "-rsxX -vv"
 # STJ
 
 # log_format = "%(levelname)s %(asctime)s.%(msecs)03d %(module)12s/%(lineno)-5d %(message)s"
-log_format = "%(levelname)-5s %(module)16s/%(lineno)-5d %(message)s"
+log_format = "%(levelname)-5s %(pathname)16s:%(lineno)-5d %(message)s"
 log_date_format ="%H:%M:%S"
 
 

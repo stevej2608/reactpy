@@ -142,8 +142,6 @@ class Layout:
 
     async def render(self) -> LayoutUpdateMessage:
 
-        logger.info("%s Layout.render %s", task_name(), self.root.type.__name__)
-
         if REACTPY_ASYNC_RENDERING.current:
             return await self._parallel_render()
         else:  # nocov
@@ -151,6 +149,9 @@ class Layout:
 
     async def _serial_render(self) -> LayoutUpdateMessage:  # nocov
         """Await the next available render. This will block until a component is updated"""
+
+        logger.info("%s _serial_render()",  task_name())
+
         while True:
             model_state_id = await self._rendering_queue.get()
             try:
@@ -169,12 +170,14 @@ class Layout:
         """Await to fetch the first completed render within our asyncio task group.
         We use the `asyncio.tasks.wait` API in order to return the first completed task.
         """
+
+        logger.info("%s _parallel_render()",  task_name())
+
         await self._render_tasks_ready.acquire()
         done, _ = await wait(self._render_tasks, return_when=FIRST_COMPLETED)
         update_task: Task[LayoutUpdateMessage] = done.pop()
         self._render_tasks.remove(update_task)
 
-        logger.info("%s _parallel_render()",  task_name())
         result = update_task.result()
         logger.info("%s layout complete len %d bytes",  task_name(), len(json.dumps(result)))
         return result

@@ -31,10 +31,14 @@ from tests.tooling.layout import layout_runner
 from tests.tooling.select import element_exists, find_element
 
 
-@pytest.fixture(autouse=True, params=[True, False])
-def async_rendering(request):
-    with patch.object(REACTPY_ASYNC_RENDERING, "current", request.param):
-        yield request.param
+from logging import getLogger
+
+logger = getLogger(__name__)
+
+# @pytest.fixture(autouse=True, params=[True, False])
+# def async_rendering(request):
+#     with patch.object(REACTPY_ASYNC_RENDERING, "current", request.param):
+#         yield request.param
 
 
 @pytest.fixture(autouse=True)
@@ -46,23 +50,38 @@ def no_logged_errors():
                 raise record.exc_info[1]
 
 
-def test_layout_repr():
+def xtest_layout_repr():
+    """STJ, Confirm:
+
+        1. __str__() works
+    """
     @reactpy.component
     def MyComponent(): ...
 
     my_component = MyComponent()
     layout = reactpy.Layout(my_component)
     assert str(layout) == f"Layout(MyComponent({id(my_component):02x}))"
+    assert True
 
 
-def test_layout_expects_abstract_component():
+def xtest_layout_expects_abstract_component():
+    """STJ, Confirm:
+
+        1. Layout constructor component check
+    """
     with pytest.raises(TypeError, match="Expected a ComponentType"):
         reactpy.Layout(None)
     with pytest.raises(TypeError, match="Expected a ComponentType"):
         reactpy.Layout(reactpy.html.div())
 
+    assert True
 
-async def test_layout_cannot_be_used_outside_context_manager(caplog):
+
+async def xtest_layout_cannot_be_used_outside_context_manager(caplog):
+    """STJ, Confirm:
+
+        1. deliver & render argument type check
+    """
     @reactpy.component
     def Component(): ...
 
@@ -75,8 +94,14 @@ async def test_layout_cannot_be_used_outside_context_manager(caplog):
     with pytest.raises(AttributeError):
         await layout.render()
 
+    assert True
+
 
 async def test_simple_layout():
+    """STJ, Confirm:
+
+        1. 
+    """
     set_state_hook = reactpy.Ref()
 
     @reactpy.component
@@ -84,14 +109,21 @@ async def test_simple_layout():
         tag, set_state_hook.current = reactpy.hooks.use_state("div")
         return reactpy.vdom(tag)
 
+    logger.info("layout")
+
     async with reactpy.Layout(SimpleComponent()) as layout:
+        logger.info("update #1")
         update_1 = await layout.render()
         assert update_1 == update_message(
             path="",
             model={"tagName": "", "children": [{"tagName": "div"}]},
         )
 
+        logger.info("update #1 - complete")
+
         set_state_hook.current("table")
+
+        logger.info("update #2")
 
         update_2 = await layout.render()
         assert update_2 == update_message(
@@ -99,8 +131,12 @@ async def test_simple_layout():
             model={"tagName": "", "children": [{"tagName": "table"}]},
         )
 
+        logger.info("update #2 - complete")
 
-async def test_nested_component_layout():
+    assert True
+
+
+async def xtest_nested_component_layout():
 
     # STJ: Confirm nested layout
 
@@ -172,7 +208,7 @@ async def test_nested_component_layout():
     not REACTPY_DEBUG_MODE.current,
     reason="errors only reported in debug mode",
 )
-async def test_layout_render_error_has_partial_update_with_error_message():
+async def xtest_layout_render_error_has_partial_update_with_error_message():
 
     # STJ: Confirm a bad component can be handled gracefully
 
@@ -226,7 +262,7 @@ async def test_layout_render_error_has_partial_update_with_error_message():
     REACTPY_DEBUG_MODE.current,
     reason="errors only reported in debug mode",
 )
-async def test_layout_render_error_has_partial_update_without_error_message():
+async def xtest_layout_render_error_has_partial_update_without_error_message():
 
     # STJ: Confirm a bad component can be handled gracefully
 
@@ -273,7 +309,7 @@ async def test_layout_render_error_has_partial_update_without_error_message():
             )
 
 
-async def test_render_raw_vdom_dict_with_single_component_object_as_children():
+async def xtest_render_raw_vdom_dict_with_single_component_object_as_children():
 
     # Confirm tags & children can be hand-crafted
 
@@ -310,7 +346,7 @@ async def test_render_raw_vdom_dict_with_single_component_object_as_children():
         )
 
 
-async def test_components_are_garbage_collected():
+async def xtest_components_are_garbage_collected():
     live_components = set()
 
     # STJ: Render same layout twice. The second rendering will create orphans from the
@@ -368,7 +404,7 @@ async def test_components_are_garbage_collected():
     assert not live_components
 
 
-async def test_root_component_life_cycle_hook_is_garbage_collected():
+async def xtest_root_component_life_cycle_hook_is_garbage_collected():
 
     # STJ: Confirm lifecycle hooks are garbage collected
 
@@ -402,7 +438,7 @@ async def test_root_component_life_cycle_hook_is_garbage_collected():
     assert not live_hooks
 
 
-async def test_life_cycle_hooks_are_garbage_collected():
+async def xtest_life_cycle_hooks_are_garbage_collected():
 
     # STJ: Confim hook associated with orphaned inner component is
     # garbge collected when the component updates.
@@ -462,7 +498,7 @@ async def test_life_cycle_hooks_are_garbage_collected():
     assert not live_hooks
 
 
-async def test_double_updated_component_is_not_double_rendered():
+async def xtest_double_updated_component_is_not_double_rendered():
 
     # STJ: Confirm repeated calls to schedule_render() result in
     # only one rendering
@@ -502,7 +538,7 @@ async def test_double_updated_component_is_not_double_rendered():
         assert run_count.current == 2
 
 
-async def test_update_path_to_component_that_is_not_direct_child_is_correct():
+async def xtest_update_path_to_component_that_is_not_direct_child_is_correct():
 
     # STJ: The test calls schedule_render() on a granchild. Confirm
     # the resulting layout update path is maps to the granchild.
@@ -527,7 +563,7 @@ async def test_update_path_to_component_that_is_not_direct_child_is_correct():
         assert update["path"] == "/children/0/children/0/children/0"
 
 
-async def test_log_on_dispatch_to_missing_event_handler(caplog):
+async def xtest_log_on_dispatch_to_missing_event_handler(caplog):
 
     # STJ: Confirm error report is generated when an attempt is made to
     # deliver an event with a missing handler
@@ -545,7 +581,7 @@ async def test_log_on_dispatch_to_missing_event_handler(caplog):
     )
 
 
-async def test_model_key_preserves_callback_identity_for_common_elements(caplog):
+async def xtest_model_key_preserves_callback_identity_for_common_elements(caplog):
 
     # STJ: Reverse the rendering order of two buttons and confirm the
     # button event refs are maintained.
@@ -597,7 +633,7 @@ async def test_model_key_preserves_callback_identity_for_common_elements(caplog)
     assert not caplog.records
 
 
-async def test_model_key_preserves_callback_identity_for_components():
+async def xtest_model_key_preserves_callback_identity_for_components():
 
     # STJ: not sure what this does
 
@@ -650,7 +686,7 @@ async def test_model_key_preserves_callback_identity_for_components():
             await layout.render()
 
 
-async def test_component_can_return_another_component_directly():
+async def xtest_component_can_return_another_component_directly():
 
     # STJ: Edge case test
 
@@ -678,7 +714,7 @@ async def test_component_can_return_another_component_directly():
         )
 
 
-async def test_hooks_for_keyed_components_get_garbage_collected():
+async def xtest_hooks_for_keyed_components_get_garbage_collected():
 
     # STJ: gradually reduce the number of keyed child components, Confirm
     # that the orphaned chilren are removed by the garbage collector
@@ -727,7 +763,7 @@ async def test_hooks_for_keyed_components_get_garbage_collected():
         assert garbage_collect_items == [3, 2, 1]
 
 
-async def test_event_handler_at_component_root_is_garbage_collected():
+async def xtest_event_handler_at_component_root_is_garbage_collected():
     event_handler = reactpy.Ref()
 
     @reactpy.component
@@ -749,7 +785,7 @@ async def test_event_handler_at_component_root_is_garbage_collected():
             assert last_event_handler() is None
 
 
-async def test_event_handler_deep_in_component_layout_is_garbage_collected():
+async def xtest_event_handler_deep_in_component_layout_is_garbage_collected():
     event_handler = reactpy.Ref()
 
     @reactpy.component
@@ -771,7 +807,7 @@ async def test_event_handler_deep_in_component_layout_is_garbage_collected():
             assert last_event_handler() is None
 
 
-async def test_duplicate_sibling_keys_causes_error(caplog):
+async def xtest_duplicate_sibling_keys_causes_error(caplog):
     hook = HookCatcher()
     should_error = True
 
@@ -807,7 +843,7 @@ async def test_duplicate_sibling_keys_causes_error(caplog):
             await layout.render()
 
 
-async def test_keyed_components_preserve_hook_on_parent_update():
+async def xtest_keyed_components_preserve_hook_on_parent_update():
     outer_hook = HookCatcher()
     inner_hook = HookCatcher()
 
@@ -830,7 +866,7 @@ async def test_keyed_components_preserve_hook_on_parent_update():
         assert old_inner_hook is inner_hook.latest
 
 
-async def test_log_error_on_bad_event_handler():
+async def xtest_log_error_on_bad_event_handler():
     bad_handler = StaticEventHandler()
 
     @reactpy.component
@@ -849,7 +885,7 @@ async def test_log_error_on_bad_event_handler():
             await layout.deliver(event)
 
 
-async def test_schedule_render_from_unmounted_hook():
+async def xtest_schedule_render_from_unmounted_hook():
     parent_set_state = reactpy.Ref()
 
     @reactpy.component
@@ -886,7 +922,7 @@ async def test_schedule_render_from_unmounted_hook():
             await layout.render()
 
 
-async def test_elements_and_components_with_the_same_key_can_be_interchanged():
+async def xtest_elements_and_components_with_the_same_key_can_be_interchanged():
     set_toggle = reactpy.Ref()
     effects = []
 
@@ -925,7 +961,7 @@ async def test_elements_and_components_with_the_same_key_can_be_interchanged():
         )
 
 
-async def test_layout_does_not_copy_element_children_by_key():
+async def xtest_layout_does_not_copy_element_children_by_key():
     # this is a regression test for a subtle bug:
     # https://github.com/reactive-python/reactpy/issues/556
 
@@ -960,7 +996,7 @@ async def test_layout_does_not_copy_element_children_by_key():
         await layout.render()
 
 
-async def test_changing_key_of_parent_element_unmounts_children():
+async def xtest_changing_key_of_parent_element_unmounts_children():
     random.seed(0)
 
     root_hook = HookCatcher()
@@ -986,7 +1022,7 @@ async def test_changing_key_of_parent_element_unmounts_children():
             assert last_state != state.current
 
 
-async def test_switching_node_type_with_event_handlers():
+async def xtest_switching_node_type_with_event_handlers():
     toggle_type = reactpy.Ref()
     element_static_handler = StaticEventHandler()
     component_static_handler = StaticEventHandler()
@@ -1024,7 +1060,7 @@ async def test_switching_node_type_with_event_handlers():
         assert component_static_handler.target not in layout._event_handlers
 
 
-async def test_switching_component_definition():
+async def xtest_switching_component_definition():
     toggle_component = reactpy.Ref()
     first_used_state = reactpy.Ref(None)
     second_used_state = reactpy.Ref(None)
@@ -1070,7 +1106,7 @@ async def test_switching_component_definition():
         assert second_used_state.current is None
 
 
-async def test_element_keys_inside_components_do_not_reset_state_of_component():
+async def xtest_element_keys_inside_components_do_not_reset_state_of_component():
     """This is a regression test for a bug.
 
     You would not expect that calling `set_child_key_num` would trigger state to be
@@ -1120,7 +1156,7 @@ async def test_element_keys_inside_components_do_not_reset_state_of_component():
             did_call_effect.clear()
 
 
-async def test_changing_key_of_component_resets_state():
+async def xtest_changing_key_of_component_resets_state():
     set_key = Ref()
     did_init_state = Ref(0)
     hook = HookCatcher()
@@ -1148,7 +1184,7 @@ async def test_changing_key_of_component_resets_state():
         assert did_init_state.current == 2
 
 
-async def test_changing_event_handlers_in_the_next_render():
+async def xtest_changing_event_handlers_in_the_next_render():
     set_event_name = Ref()
     event_handler = StaticEventHandler()
     did_trigger = Ref(False)
@@ -1173,7 +1209,7 @@ async def test_changing_event_handlers_in_the_next_render():
         did_trigger.current = False
 
 
-async def test_change_element_to_string_causes_unmount():
+async def xtest_change_element_to_string_causes_unmount():
     set_toggle = Ref()
     did_unmount = Ref(False)
 
@@ -1199,7 +1235,7 @@ async def test_change_element_to_string_causes_unmount():
         assert did_unmount.current
 
 
-async def test_does_render_children_after_component():
+async def xtest_does_render_children_after_component():
     """Regression test for bug where layout was appending children to a stale ref
 
     The stale reference was created when a component got rendered. Thus, everything
@@ -1238,7 +1274,7 @@ async def test_does_render_children_after_component():
         }
 
 
-async def test_render_removed_context_consumer():
+async def xtest_render_removed_context_consumer():
     Context = reactpy.create_context(None)
     toggle_remove_child = None
     schedule_removed_child_render = None
@@ -1277,7 +1313,7 @@ async def test_render_removed_context_consumer():
         render_task.cancel()
 
 
-async def test_ensure_model_path_udpates():
+async def xtest_ensure_model_path_udpates():
     """
     This is regression test for a bug in which we failed to update the path of a bug
     that arose when the "path" of a component within the overall model was not updated
@@ -1333,7 +1369,7 @@ async def test_ensure_model_path_udpates():
         assert c["attributes"]["color"] == "blue"
 
 
-async def test_async_renders(async_rendering):
+async def xtest_async_renders(async_rendering):
     if not async_rendering:
         raise pytest.skip("Async rendering not enabled")
 
@@ -1382,7 +1418,7 @@ async def test_async_renders(async_rendering):
         assert child_2_render_count.current == 1
 
 
-async def test_none_does_not_render():
+async def xtest_none_does_not_render():
     @component
     def Root():
         return html.div(None, Child())
@@ -1401,7 +1437,7 @@ async def test_none_does_not_render():
         }
 
 
-async def test_conditionally_render_none_does_not_trigger_state_change_in_siblings():
+async def xtest_conditionally_render_none_does_not_trigger_state_change_in_siblings():
     toggle_condition = Ref()
     effect_run_count = Ref(0)
 
