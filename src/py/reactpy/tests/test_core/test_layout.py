@@ -97,7 +97,7 @@ async def xtest_layout_cannot_be_used_outside_context_manager(caplog):
     assert True
 
 
-async def test_simple_layout():
+async def xtest_simple_layout():
     """STJ, Confirm:
 
         1. 
@@ -136,7 +136,7 @@ async def test_simple_layout():
     assert True
 
 
-async def xtest_nested_component_layout():
+async def test_nested_component_layout():
 
     # STJ: Confirm nested layout
 
@@ -145,12 +145,16 @@ async def xtest_nested_component_layout():
 
     @reactpy.component
     def Parent():
+        logger.info(">>>>>>> Parent.use_state() <<<<<<<<< ")
         state, parent_set_state.current = reactpy.hooks.use_state(0)
+        logger.info(">>>>>>> Parent.render() <<<<<<<<< ")
         return reactpy.html.div(state, Child())
 
     @reactpy.component
     def Child():
+        logger.info(">>>>>>>>>> Child.use_state() <<<<<<<<< ")
         state, child_set_state.current = reactpy.hooks.use_state(0)
+        logger.info(">>>>>>>>>> Child.render() <<<<<<<<< ")
         return reactpy.html.div(state)
 
     def make_parent_model(state, model):
@@ -175,6 +179,8 @@ async def xtest_nested_component_layout():
         # STJ: Confirm initial rendering includes both the
         # parent and the child
 
+        logger.info(">>>>>>>>>> update_1 <<<<<<<<< ")
+
         update_1 = await layout.render()
         assert update_1 == update_message(
             path="",
@@ -184,8 +190,10 @@ async def xtest_nested_component_layout():
         # STJ: Change the parent state and confrim both the parent
         # and the child are rendered
 
+        logger.info(">>>>>>>>>> parent_set_state <<<<<<<<< ")
         parent_set_state.current(1)
 
+        logger.info(">>>>>>>>>> update_2 <<<<<<<<< ")
         update_2 = await layout.render()
         assert update_2 == update_message(
             path="",
@@ -194,14 +202,17 @@ async def xtest_nested_component_layout():
 
         # STJ: Change the child state and confirm only the
         # child is rendered
-
+        logger.info(">>>>>>>>>> child_set_state <<<<<<<<< ")
         child_set_state.current(1)
 
+        logger.info(">>>>>>>>>> update_3 <<<<<<<<< ")
         update_3 = await layout.render()
         assert update_3 == update_message(
             path="/children/0/children/1",
             model=make_child_model(1),
         )
+
+    assert True
 
 
 @pytest.mark.skipif(

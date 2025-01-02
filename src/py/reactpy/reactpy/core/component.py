@@ -37,7 +37,7 @@ def component(
     return constructor
 
 
-# Intance returned by @component
+# Instance returned by @component
 class Component:
     """An object for rending component models."""
 

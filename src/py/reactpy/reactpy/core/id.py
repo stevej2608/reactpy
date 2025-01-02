@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from asyncio import current_task
 
-from exceptiongroup import catch
-
 
 def ID() -> int:
     """An immutable counter. Returns  0, 1, 2 ... on each successive call

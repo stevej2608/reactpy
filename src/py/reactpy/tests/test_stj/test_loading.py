@@ -5,15 +5,15 @@ from playwright.async_api import Browser
 from utils.logger import log
 
 from reactpy import component, event, html, use_location, use_state
+from reactpy.core.id import task_name
 from reactpy.testing import BackendFixture
 
-from reactpy.core.id import task_name
-
-
-from .tooling import page_stable, task_monitor
+from .tooling import page_stable
 
 
 async def test_stress(server: BackendFixture, browser: Browser):
+    """Load up server with simultaneous requests"""
+
     _browser_log: dict[str, list[str]] = {}
 
     def browser_log(id:str, msg:str):
@@ -65,16 +65,10 @@ async def test_stress(server: BackendFixture, browser: Browser):
 
     log.info("test_stress")
 
-    # task_switch_monitor = task_monitor()
-
-
-    # event_loop = asyncio.get_event_loop()
-    # event_loop.set_debug(True)
-
     server.mount(TestApp)
 
     await asyncio.wait(
-        [asyncio.create_task(worker(browser, i)) for i in range(1)],
+        [asyncio.create_task(worker(browser, i)) for i in range(6)],
         return_when=asyncio.ALL_COMPLETED,
     )
 

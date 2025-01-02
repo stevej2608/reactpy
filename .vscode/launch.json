@@ -65,7 +65,7 @@
         },
 
         {
-            "name": "2b. PyTest (test_sample_button)",
+            "name": "2b. PyTest (test_sample_button.py)",
             "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
@@ -82,7 +82,7 @@
           },
 
           {
-            "name": "2c. PyTest (test_layout)",
+            "name": "2c. PyTest (test_layout.py)",
             "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
@@ -91,10 +91,14 @@
               "./tests/test_core/test_layout.py"
             ],
             "cwd": "${workspaceRoot}/src/py/reactpy",
-            "env": {},
+            "env": {
+              "REACTPY_ASYNC_RENDERING": "0"
+              // "PYTHONASYNCIODEBUG": "1"
+            },
             "envFile": "${workspaceRoot}/.env",
-            "console": "internalConsole",
-            "internalConsoleOptions": "openOnSessionStart",
+            // "console": "internalConsole",
+            "console": "integratedTerminal",
+            // "internalConsoleOptions": "openOnSessionStart",
             "justMyCode": false
           },
 
@@ -129,32 +133,11 @@
               // "PYTHONASYNCIODEBUG": "1"
             },
             "envFile": "${workspaceRoot}/.env",
-            "console": "internalConsole",
-            "internalConsoleOptions": "openOnSessionStart",
-            "justMyCode": false
-          },
-
-
-          {
-            "name": "2f. PyTest (test_layout.py)",
-            "type": "debugpy",
-            "request": "launch",
-            "stopOnEntry": false,
-            "module": "pytest",
-            "args": [
-              "./tests/test_core/test_layout.py"
-            ],
-            "cwd": "${workspaceRoot}/src/py/reactpy",
-            "env": {
-              // "PYTHONASYNCIODEBUG": "1"
-            },
-            "envFile": "${workspaceRoot}/.env",
             // "console": "internalConsole",
             "console": "integratedTerminal",
             // "internalConsoleOptions": "openOnSessionStart",
             "justMyCode": false
           },
-
 
           {
             "name": "2g. PyTest (Current File)",
@@ -174,9 +157,7 @@
             "internalConsoleOptions": "openOnSessionStart",
             "justMyCode": false
           },
-  
-  
-  
+
         
     ]
 }

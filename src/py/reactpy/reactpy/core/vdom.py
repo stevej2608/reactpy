@@ -231,7 +231,7 @@ def make_vdom_constructor(
     """
 
     def constructor(*attributes_and_children: Any, **kwargs: Any) -> VdomDict:
-        logger.info('%s create vdom %s', task_name(), tag)
+        logger.info("%s make_vdom_constructor(tag=%s)", task_name(), tag)
         model = vdom(tag, *attributes_and_children, **kwargs)
         if not allow_children and "children" in model:
             msg = f"{tag!r} nodes cannot have children."

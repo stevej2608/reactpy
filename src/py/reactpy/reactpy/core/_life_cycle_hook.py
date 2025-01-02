@@ -33,7 +33,7 @@ def current_hook() -> LifeCycleHook:
 
     hook = hook_stack[-1]
 
-    logger.info("%s current_hook() component=%s", task_name(), hook.component.type.__name__)
+    logger.info("%s current_hook() component=%s, id=%s", task_name(), hook.component.type.__name__, hook._id)
 
     return hook
 
@@ -147,7 +147,7 @@ class LifeCycleHook:
 
         self._id = ID()
 
-        logger.info("%s LifeCycleHook.constructor()",  task_name())
+        logger.info("%s LifeCycleHook.constructor() id=%s",  task_name(), self._id)
 
     def schedule_render(self) -> None:
         logger.info("%s LifeCycleHook.schedule_render()",  task_name())
@@ -212,14 +212,14 @@ class LifeCycleHook:
         self._scheduled_render = False
         self.component = component
 
-        logger.info("%s component_will_render %s", task_name(), self.component.type.__name__)
+        logger.info("%s Layout.component_will_render(%s)", task_name(), self.component.type.__name__)
 
         self.set_current()
 
     async def affect_component_did_render(self) -> None:
         """The component completed a render"""
 
-        logger.info("%s component_did_render %s",  task_name(), self.component.type.__name__)
+        logger.info("%s Layout.component_did_render(%s)",  task_name(), self.component.type.__name__)
 
         self.unset_current()
         self._rendered_atleast_once = True

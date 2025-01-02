@@ -19,7 +19,7 @@ from reactpy.testing import (
     clear_reactpy_web_modules_dir,
 )
 
-REACTPY_ASYNC_RENDERING.current = True
+REACTPY_ASYNC_RENDERING.current = False
 
 
 def pytest_addoption(parser: Parser) -> None:

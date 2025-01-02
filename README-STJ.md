@@ -176,6 +176,9 @@ and events:
         )
 ```
 
+All is not what it seems. The decorators *@component* and *@event* together
+with the *use_state()* hook are the main routes into the ReactPy underworld.
+
 
 
 * [test_simple_layout](src/py/reactpy/tests/test_core/test_layout.py#L82)
@@ -187,7 +190,23 @@ and events:
 
 ## TODO
 
-- [ ] Undestand layout lifcycle hooks
+- [ ] Understand layout lifecycle hooks
+
+## UML
+
+    pyreverse -ASmy -c reactpy.core._life_cycle_hook
+
+    cd src/py/reactpy
+    pyreverse -ASmy -o png reactpy.core._life_cycle_hook reactpy.core.layout reactpy.core.component
+
+    pyreverse -o png ./reactpy
+
+
+Diagrams are not great.
+
+Tried to use the vscode draw.io plugin. The plugin works well but very slow to create meaningful class
+diagrams. [layout](docs/source/diagrams/layout.drawio)
+
 
 
 # Code organisation

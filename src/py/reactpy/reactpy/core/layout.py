@@ -150,7 +150,7 @@ class Layout:
     async def _serial_render(self) -> LayoutUpdateMessage:  # nocov
         """Await the next available render. This will block until a component is updated"""
 
-        logger.info("%s _serial_render()",  task_name())
+        logger.info("%s Layout._serial_render()",  task_name())
 
         while True:
             model_state_id = await self._rendering_queue.get()
@@ -171,7 +171,7 @@ class Layout:
         We use the `asyncio.tasks.wait` API in order to return the first completed task.
         """
 
-        logger.info("%s _parallel_render()",  task_name())
+        logger.info("%s Layout._parallel_render()",  task_name())
 
         await self._render_tasks_ready.acquire()
         done, _ = await wait(self._render_tasks, return_when=FIRST_COMPLETED)
@@ -210,7 +210,7 @@ class Layout:
         life_cycle_state = new_state.life_cycle_state
         life_cycle_hook = life_cycle_state.hook
 
-        logger.info("%s _render_component %s",  task_name(), component.type.__name__)
+        logger.info("%s Layout._render_component(%s)",  task_name(), component.type.__name__)
 
         self._model_states_by_life_cycle_state_id[life_cycle_state.id] = new_state
 
@@ -264,7 +264,7 @@ class Layout:
         raw_model: Any,
     ) -> None:
 
-        logger.info("%s _render_model", task_name())
+        logger.info("%s Layout._render_model()", task_name())
 
         try:
             new_state.model.current = {"tagName": raw_model["tagName"]}
@@ -281,7 +281,7 @@ class Layout:
             exit_stack, old_state, new_state, raw_model.get("children", [])
         )
 
-        logger.info("%s _render_model - done", task_name())
+        logger.info("%s Layout._render_model - done", task_name())
 
 
     def _render_model_attributes(
@@ -290,6 +290,9 @@ class Layout:
         new_state: _ModelState,
         raw_model: dict[str, Any],
     ) -> None:
+
+        logger.info("%s Layout._render_model_attributes - done", task_name())
+
         # extract event handlers from 'eventHandlers' and 'attributes'
         handlers_by_event: EventHandlerDict = raw_model.get("eventHandlers", {})
 
@@ -355,7 +358,7 @@ class Layout:
         raw_children: Any,
     ) -> None:
 
-        logger.info("%s _render_model_children", task_name())
+        logger.info("%s Layout._render_model_children", task_name())
 
         if not isinstance(raw_children, (list, tuple)):
             raw_children = [raw_children]
@@ -462,7 +465,7 @@ class Layout:
         raw_children: list[Any],
     ) -> None:
 
-        logger.info("%s _render_model_children_without_old_state", task_name())
+        logger.info("%s Layout._render_model_children_without_old_state", task_name())
 
 
         children_info = _get_children_info(raw_children)
@@ -526,6 +529,9 @@ class Layout:
 def _new_root_model_state(
     component: ComponentType, schedule_render: Callable[[_LifeCycleStateId], None]
 ) -> _ModelState:
+
+    logger.info("%s Layout._new_root_model_state(%s)", task_name(), component.type.__name__)
+
     return _ModelState(
         parent=None,
         index=-1,
@@ -545,6 +551,9 @@ def _make_component_model_state(
     component: ComponentType,
     schedule_render: Callable[[_LifeCycleStateId], None],
 ) -> _ModelState:
+
+    logger.info("%s Layout._make_component_model_state(%s)", task_name(), component.type.__name__)
+
     return _ModelState(
         parent=parent,
         index=index,
@@ -710,6 +719,9 @@ def _make_life_cycle_state(
     schedule_render: Callable[[_LifeCycleStateId], None],
 ) -> _LifeCycleState:
     life_cycle_state_id = _LifeCycleStateId(uuid4().hex)
+
+    logger.info("%s Layout._make_life_cycle_state(%s), id=%s", task_name(), component.type.__name__, life_cycle_state_id)
+
     return _LifeCycleState(
         life_cycle_state_id,
         LifeCycleHook(lambda: schedule_render(life_cycle_state_id)),
